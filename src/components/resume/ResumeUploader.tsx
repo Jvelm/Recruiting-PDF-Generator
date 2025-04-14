@@ -78,7 +78,7 @@ export default function ResumeUploader({ onParsed }: ResumeUploaderProps) {
         className={`w-full py-2 px-4 rounded-md font-medium text-white
           ${loading || !file 
             ? 'bg-gray-400 cursor-not-allowed' 
-            : 'bg-blue-600 hover:bg-blue-700'}`}
+            : 'bg-[#F6F5F4] hover:bg-[#E6E5E4] text-gray-800'}`}
       >
         {loading ? 'Processing...' : 'Parse Resume'}
       </button>
