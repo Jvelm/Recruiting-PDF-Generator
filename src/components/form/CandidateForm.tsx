@@ -7,28 +7,27 @@ import { ParsedResume } from '@/lib/pdf-parser';
 
 interface CandidateFormProps {
   parsedResume: ParsedResume;
+  existingData?: CandidateFormData; // Add optional existingData prop
   onSubmit: (data: CandidateFormData) => void;
 }
 
 export interface CandidateFormData {
-  // Personal info from resume
+  // Personal info
   fullName: string;
-  email: string;
-  phone: string;
+  positionName: string;
+  countryOfResidence: string;
+  yearsOfExperience: number;
   
-  // Recruiter mandatory inputs
- positionName: string;
- countryOfResidence: string;
- yearsOfExperience: number;
+  // Assessment
   englishLevel: string;
 
- culturalFit: {
-   teamwork: number;
-   communication: number;
-   adaptability: number;
-   problemSolving: number;
-   leadership: number;
- };
+  fit5: {
+    ownership: number;
+    collaboration: number;
+    impact: number;
+    tenacity: number;
+    curiosity: number;
+  };
   interviewNotes: string;
   
   // Experience entries from resume
@@ -45,26 +44,30 @@ export interface CandidateFormData {
   githubUrl?: string;
 }
 
-export default function CandidateForm({ parsedResume, onSubmit }: CandidateFormProps) {
+export default function CandidateForm({ parsedResume, existingData, onSubmit }: CandidateFormProps) {
   const { register, handleSubmit, formState: { errors } } = useForm<CandidateFormData>({
-    defaultValues: {
-      fullName: parsedResume.personalInfo.name,
-      email: parsedResume.personalInfo.email,
-      phone: parsedResume.personalInfo.phone,
-      experience: parsedResume.experience,
-     positionName: '',
-     countryOfResidence: '',
-     yearsOfExperience: 0,
-      englishLevel: '',
 
-     culturalFit: {
-       teamwork: 3,
-       communication: 3,
-       adaptability: 3,
-       problemSolving: 3,
-       leadership: 3
-     },
-      interviewNotes: '',
+   defaultValues: {
+     // Use existing data if available, otherwise use parsed data
+      fullName: existingData?.fullName || parsedResume.personalInfo.name,
+
+     positionName: existingData?.positionName || '',
+     countryOfResidence: existingData?.countryOfResidence || '',
+     yearsOfExperience: existingData?.yearsOfExperience || 0,
+      experience: parsedResume.experience,
+     englishLevel: existingData?.englishLevel || '',
+      fit5: {
+       ownership: existingData?.fit5?.ownership || 8,
+       collaboration: existingData?.fit5?.collaboration || 8,
+       impact: existingData?.fit5?.impact || 8,
+       tenacity: existingData?.fit5?.tenacity || 8,
+       curiosity: existingData?.fit5?.curiosity || 8
+      },
+     interviewNotes: existingData?.interviewNotes || '',
+     // Include optional fields if they exist in existing data
+     portfolioUrl: existingData?.portfolioUrl || undefined,
+     linkedinUrl: existingData?.linkedinUrl || undefined,
+     githubUrl: existingData?.githubUrl || undefined
     }
   });
   
@@ -95,82 +98,53 @@ export default function CandidateForm({ parsedResume, onSubmit }: CandidateFormP
               )}
             </div>
             
-           <div>
-             <label className="block text-sm font-medium text-gray-700 mb-1">
-               Position Name
-             </label>
-             <input
-               type="text"
-               {...register('positionName', { required: 'Position name is required' })}
-               className="w-full px-3 py-2 border border-gray-300 rounded-md"
-               placeholder="e.g. Frontend Developer"
-             />
-             {errors.positionName && (
-               <p className="mt-1 text-sm text-red-600">{errors.positionName.message}</p>
-             )}
-           </div>
-            
-           <div>
-             <label className="block text-sm font-medium text-gray-700 mb-1">
-               Country of Residence
-             </label>
-             <input
-               type="text"
-               {...register('countryOfResidence', { required: 'Country is required' })}
-               className="w-full px-3 py-2 border border-gray-300 rounded-md"
-             />
-             {errors.countryOfResidence && (
-               <p className="mt-1 text-sm text-red-600">{errors.countryOfResidence.message}</p>
-             )}
-           </div>
-            
-           <div>
-             <label className="block text-sm font-medium text-gray-700 mb-1">
-               Years of Experience
-             </label>
-             <input
-               type="number"
-               {...register('yearsOfExperience', { 
-                 required: 'Years of experience is required',
-                 min: { value: 0, message: 'Must be a positive number' }
-               })}
-               className="w-full px-3 py-2 border border-gray-300 rounded-md"
-             />
-             {errors.yearsOfExperience && (
-               <p className="mt-1 text-sm text-red-600">{errors.yearsOfExperience.message}</p>
-             )}
-           </div>
-            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
+                Position Name
               </label>
               <input
-                type="email"
-                {...register('email', { 
-                  required: 'Email is required',
-                  pattern: {
-                    value: /\S+@\S+\.\S+/,
-                    message: 'Please enter a valid email'
-                  }
-                })}
+                type="text"
+                {...register('positionName', { required: 'Position name is required' })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="e.g. Frontend Developer"
               />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+              {errors.positionName && (
+                <p className="mt-1 text-sm text-red-600">{errors.positionName.message}</p>
               )}
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Phone
+                Country of Residence
               </label>
               <input
-                type="tel"
-                {...register('phone')}
+                type="text"
+                {...register('countryOfResidence', { required: 'Country is required' })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               />
+              {errors.countryOfResidence && (
+                <p className="mt-1 text-sm text-red-600">{errors.countryOfResidence.message}</p>
+              )}
             </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Years of Experience
+              </label>
+              <input
+                type="number"
+                {...register('yearsOfExperience', { 
+                  required: 'Years of experience is required',
+                  min: { value: 0, message: 'Must be a positive number' }
+                })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              />
+              {errors.yearsOfExperience && (
+                <p className="mt-1 text-sm text-red-600">{errors.yearsOfExperience.message}</p>
+              )}
+            </div>
+            
+
           </div>
         </div>
         
@@ -198,110 +172,110 @@ export default function CandidateForm({ parsedResume, onSubmit }: CandidateFormP
             )}
           </div>
           
+          <div className="mb-4">
 
-          
-         <div className="mb-4">
            <label className="block text-sm font-medium text-gray-700 mb-3">
-             Cultural Fit Assessment (1-5)
-           </label>
-           
-           <div className="space-y-3">
-             <div>
-               <div className="flex justify-between mb-1">
-                 <label className="text-sm text-gray-600">Teamwork</label>
-                 <span className="text-sm text-gray-600">
-                   {[1, 2, 3, 4, 5].map((value) => (
-                     <label key={value} className="ml-3 cursor-pointer">
-                       <input
-                         type="radio"
-                         value={value}
-                         {...register('culturalFit.teamwork', { required: true })}
-                         className="mr-1"
-                       />
-                       {value}
-                     </label>
-                   ))}
-                 </span>
-               </div>
-             </div>
-             
-             <div>
-               <div className="flex justify-between mb-1">
-                 <label className="text-sm text-gray-600">Communication</label>
-                 <span className="text-sm text-gray-600">
-                   {[1, 2, 3, 4, 5].map((value) => (
-                     <label key={value} className="ml-3 cursor-pointer">
-                       <input
-                         type="radio"
-                         value={value}
-                         {...register('culturalFit.communication', { required: true })}
-                         className="mr-1"
-                       />
-                       {value}
-                     </label>
-                   ))}
-                 </span>
-               </div>
-             </div>
-             
-             <div>
-               <div className="flex justify-between mb-1">
-                 <label className="text-sm text-gray-600">Adaptability</label>
-                 <span className="text-sm text-gray-600">
-                   {[1, 2, 3, 4, 5].map((value) => (
-                     <label key={value} className="ml-3 cursor-pointer">
-                       <input
-                         type="radio"
-                         value={value}
-                         {...register('culturalFit.adaptability', { required: true })}
-                         className="mr-1"
-                       />
-                       {value}
-                     </label>
-                   ))}
-                 </span>
-               </div>
-             </div>
-             
-             <div>
-               <div className="flex justify-between mb-1">
-                 <label className="text-sm text-gray-600">Problem Solving</label>
-                 <span className="text-sm text-gray-600">
-                   {[1, 2, 3, 4, 5].map((value) => (
-                     <label key={value} className="ml-3 cursor-pointer">
-                       <input
-                         type="radio"
-                         value={value}
-                         {...register('culturalFit.problemSolving', { required: true })}
-                         className="mr-1"
-                       />
-                       {value}
-                     </label>
-                   ))}
-                 </span>
-               </div>
-             </div>
-             
-             <div>
-               <div className="flex justify-between mb-1">
-                 <label className="text-sm text-gray-600">Leadership</label>
-                 <span className="text-sm text-gray-600">
-                   {[1, 2, 3, 4, 5].map((value) => (
-                     <label key={value} className="ml-3 cursor-pointer">
-                       <input
-                         type="radio"
-                         value={value}
-                         {...register('culturalFit.leadership', { required: true })}
-                         className="mr-1"
-                       />
-                       {value}
-                     </label>
-                   ))}
-                 </span>
-               </div>
-             </div>
-           </div>
-         </div>
+             FIT 5 Assessment
+            </label>
+            
+            <div className="space-y-3">
+              <div>
+                <div className="flex justify-between mb-1">
+
+                 <label className="text-sm text-gray-600">Ownership</label>
+                  <span className="text-sm text-gray-600">
+                   {[7, 8, 9, 10].map((value) => (
+                      <label key={value} className="ml-3 cursor-pointer">
+                        <input
+                          type="radio"
+                          value={value}
+                         {...register('fit5.ownership', { required: true })}
+                          className="mr-1"
+                        />
+                        {value}
+                      </label>
+                    ))}
+                  </span>
+                </div>
+              </div>
+              
+              <div>
+                <div className="flex justify-between mb-1">
+                 <label className="text-sm text-gray-600">Collaboration</label>
+                  <span className="text-sm text-gray-600">
+                   {[7, 8, 9, 10].map((value) => (
+                      <label key={value} className="ml-3 cursor-pointer">
+                        <input
+                          type="radio"
+                          value={value}
+                         {...register('fit5.collaboration', { required: true })}
+                          className="mr-1"
+                        />
+                        {value}
+                      </label>
+                    ))}
+                  </span>
+                </div>
+              </div>
+              
+              <div>
+                <div className="flex justify-between mb-1">
+                 <label className="text-sm text-gray-600">Impact</label>
+                  <span className="text-sm text-gray-600">
+                   {[7, 8, 9, 10].map((value) => (
+                      <label key={value} className="ml-3 cursor-pointer">
+                        <input
+                          type="radio"
+                          value={value}
+                         {...register('fit5.impact', { required: true })}
+                          className="mr-1"
+                        />
+                        {value}
+                      </label>
+                    ))}
+                  </span>
+                </div>
+              </div>
+              
+              <div>
+                <div className="flex justify-between mb-1">
+                 <label className="text-sm text-gray-600">Tenacity</label>
+                  <span className="text-sm text-gray-600">
+                   {[7, 8, 9, 10].map((value) => (
+                      <label key={value} className="ml-3 cursor-pointer">
+                        <input
+                          type="radio"
+                          value={value}
+                         {...register('fit5.tenacity', { required: true })}
+                          className="mr-1"
+                        />
+                        {value}
+                      </label>
+                    ))}
+                  </span>
+                </div>
+              </div>
+              
+              <div>
+                <div className="flex justify-between mb-1">
+                 <label className="text-sm text-gray-600">Curiosity</label>
+                  <span className="text-sm text-gray-600">
+                   {[7, 8, 9, 10].map((value) => (
+                      <label key={value} className="ml-3 cursor-pointer">
+                        <input
+                          type="radio"
+                          value={value}
+                         {...register('fit5.curiosity', { required: true })}
+                          className="mr-1"
+                        />
+                        {value}
+                      </label>
+                    ))}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -319,12 +293,108 @@ export default function CandidateForm({ parsedResume, onSubmit }: CandidateFormP
           </div>
         </div>
         
+        {/* Experience Section */}
+        <div className="bg-gray-50 p-4 rounded-md">
+          <h3 className="text-lg font-medium mb-4">Work Experience</h3>
+          
+          {parsedResume.experience.map((exp, index) => (
+            <div key={index} className="mb-6 p-3 border border-gray-200 rounded-md">
+              <div className="grid md:grid-cols-2 gap-4 mb-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Job Title
+                  </label>
+                  <input
+                    type="text"
+                    {...register(`experience.${index}.title` as const)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Company
+                  </label>
+                  <input
+                    type="text"
+                    {...register(`experience.${index}.company` as const)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  />
+                </div>
+              </div>
+              
+              <div className="mb-3">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Date Range
+                </label>
+                <input
+                  type="text"
+                  {...register(`experience.${index}.dateRange` as const)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  {...register(`experience.${index}.description` as const)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                ></textarea>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {/* Optional Links */}
+        <div className="bg-gray-50 p-4 rounded-md">
+          <h3 className="text-lg font-medium mb-4">Additional Links (Optional)</h3>
+          
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Portfolio URL
+              </label>
+              <input
+                type="url"
+                {...register('portfolioUrl')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="https://portfolio.example.com"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                LinkedIn
+              </label>
+              <input
+                type="url"
+                {...register('linkedinUrl')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="https://linkedin.com/in/username"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                GitHub
+              </label>
+              <input
+                type="url"
+                {...register('githubUrl')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="https://github.com/username"
+              />
+            </div>
+          </div>
+        </div>
         
         {/* Submit Button */}
         <div className="flex justify-end">
           <button
             type="submit"
-            className="px-5 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700"
+            className="px-5 py-2 bg-[#F12A30] text-white font-medium rounded-md hover:bg-[#d91c22]"
           >
             Preview PDF
           </button>
